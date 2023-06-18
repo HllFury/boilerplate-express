@@ -1,22 +1,40 @@
 pipeline {
-    agent any
-
- stages {
-       stage('Git Fetch') {
-            steps {
-               git 'https://github.com/HllFury/boilerplate-express'
-            }
-        }
-        stage('Test'){
-           steps {
-                cho 'Hello World2'
-           }
-        }
-        stage('Deploy') {
-            steps{
-                cho 'Hello World'
-            }
-        }
+  environment {
+    registry = "hllfury/node-express"
+    dockerImage = ''
+  }
+  agent any
+  tools {nodejs "node" }
+  stages {
+    stage('Cloning Git') {
+      steps {
+        git branch: 'main', url: 'https://github.com/HllFury/boilerplate-express.git'
+      }
     }
- 
+    stage('Build') {
+       steps {
+         sh 'npm install'
+       }
+    }
+    stage('Test') {
+      steps {
+        sh 'npm test'
+      }
+    }
+    stage('Building image') {
+      steps{
+        script {
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+        }
+      }
+    }
+    stage('Deploy Image') {
+      steps{
+         script 
+         { 
+            dockerImage.push()
+        }
+      }
+    }
+  }
 }
