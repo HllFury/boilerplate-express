@@ -1,0 +1,22 @@
+pipeline {
+    agent any
+
+ stages {
+       stage('Git Fetch') {
+            steps {
+               git 'https://github.com/HllFury/boilerplate-express'
+            }
+        }
+        stage('Test'){
+           steps {
+                cho 'Hello World2'
+           }
+        }
+        stage('Deploy') {
+            steps{
+                cho 'Hello World'
+            }
+        }
+    }
+ 
+}
