@@ -2,6 +2,7 @@ pipeline {
   environment {
     registry = "hllfury/node-express"
     dockerImage = ''
+    DOCKERHUB_CREDENTIALS = credentials('dockerhub')
   }
   agent any
   tools {nodejs "node" }
@@ -23,18 +24,26 @@ pipeline {
     }
     stage('Building image') {
       steps{
-        script {
-          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+          sh 'docker build -t hllfury/node-express .'
         }
-      }
     }
     stage('Deploy Image') {
-      steps{
-         script 
-         { 
-            dockerImage.push()
-        }
+      steps{ 
+            sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            sh 'docker push lloydmatereke/jenkins-docker-hub'
       }
+    }
+    stage('Deploy Manfest Files') {
+        steps{
+            script {
+          kubernetesDeploy(configs: "deployment.yaml", "service.yaml")
+            }
+        }
+    }
+  }
+    post {
+    always {
+      sh 'docker logout'
     }
   }
 }
